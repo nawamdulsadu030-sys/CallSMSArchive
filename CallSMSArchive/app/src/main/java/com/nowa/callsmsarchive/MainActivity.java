@@ -1,10 +1,15 @@
 package com.nowa.callsmsarchive;
 
 import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.CallLog;
+import android.provider.Telephony;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -43,16 +48,14 @@ public class MainActivity extends AppCompatActivity {
         btnCalls.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Loading...", Toast.LENGTH_SHORT).show();
-                loadCalls();
+                importAndShowCalls();
             }
         });
 
         btnSms.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Loading...", Toast.LENGTH_SHORT).show();
-                loadSms();
+                importAndShowSms();
             }
         });
 
@@ -78,17 +81,69 @@ public class MainActivity extends AppCompatActivity {
         if (!needed.isEmpty()) {
             ActivityCompat.requestPermissions(this, needed.toArray(new String[0]), PERM_REQUEST);
         } else {
-            loadCalls();
+            importAndShowCalls();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        loadCalls();
+        importAndShowCalls();
     }
 
-    private void loadCalls() {
+    private void importAndShowCalls() {
+        Toast.makeText(this, "Importing calls...", Toast.LENGTH_SHORT).show();
+        try {
+            DatabaseHelper dbHelper = new DatabaseHelper(this);
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+            ContentResolver cr = getContentResolver();
+            Cursor c = cr.query(
+                CallLog.Calls.CONTENT_URI,
+                null, null, null,
+                CallLog.Calls.DATE + " DESC"
+            );
+
+            if (c != null) {
+                while (c.moveToNext()) {
+                    String number = c.getString(c.getColumnIndexOrThrow(CallLog.Calls.NUMBER));
+                    int typeInt = c.getInt(c.getColumnIndexOrThrow(CallLog.Calls.TYPE));
+                    long date = c.getLong(c.getColumnIndexOrThrow(CallLog.Calls.DATE));
+                    long duration = c.getLong(c.getColumnIndexOrThrow(CallLog.Calls.DURATION));
+
+                    String type = typeInt == CallLog.Calls.INCOMING_TYPE ? "INCOMING" : "OUTGOING";
+
+                    Cursor existing = db.rawQuery(
+                        "SELECT id FROM calls WHERE number=? AND timestamp=?",
+                        new String[]{number, String.valueOf(date)}
+                    );
+
+                    if (existing.getCount() == 0) {
+                        ContentValues values = new ContentValues();
+                        values.put("number", number);
+                        values.put("name", "");
+                        values.put("type", type);
+                        values.put("duration", duration);
+                        values.put("timestamp", date);
+                        values.put("saved_at", System.currentTimeMillis());
+                        db.insert("calls", null, values);
+                    }
+                    existing.close();
+                }
+                c.close();
+            }
+            db.close();
+
+            showCalls();
+
+        } catch (Exception e) {
+            items.clear();
+            items.add("Error: " + e.getMessage());
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    private void showCalls() {
         try {
             items.clear();
             DatabaseHelper dbHelper = new DatabaseHelper(this);
@@ -109,7 +164,9 @@ public class MainActivity extends AppCompatActivity {
             db.close();
 
             if (items.isEmpty()) {
-                items.add("No call records yet.\nMake or receive a call first.");
+                items.add("No calls found.");
+            } else {
+                Toast.makeText(this, items.size() + " calls loaded!", Toast.LENGTH_SHORT).show();
             }
             adapter.notifyDataSetChanged();
 
@@ -120,7 +177,53 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void loadSms() {
+    private void importAndShowSms() {
+        Toast.makeText(this, "Importing SMS...", Toast.LENGTH_SHORT).show();
+        try {
+            DatabaseHelper dbHelper = new DatabaseHelper(this);
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+            ContentResolver cr = getContentResolver();
+            Uri smsUri = Uri.parse("content://sms/inbox");
+            Cursor c = cr.query(smsUri, null, null, null, "date DESC");
+
+            if (c != null) {
+                while (c.moveToNext()) {
+                    String address = c.getString(c.getColumnIndexOrThrow("address"));
+                    String body = c.getString(c.getColumnIndexOrThrow("body"));
+                    long date = c.getLong(c.getColumnIndexOrThrow("date"));
+
+                    Cursor existing = db.rawQuery(
+                        "SELECT id FROM sms WHERE address=? AND timestamp=?",
+                        new String[]{address, String.valueOf(date)}
+                    );
+
+                    if (existing.getCount() == 0) {
+                        ContentValues values = new ContentValues();
+                        values.put("address", address);
+                        values.put("name", "");
+                        values.put("body", body);
+                        values.put("type", "INBOX");
+                        values.put("timestamp", date);
+                        values.put("saved_at", System.currentTimeMillis());
+                        db.insert("sms", null, values);
+                    }
+                    existing.close();
+                }
+                c.close();
+            }
+            db.close();
+
+            showSms();
+
+        } catch (Exception e) {
+            items.clear();
+            items.add("Error: " + e.getMessage());
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    private void showSms() {
         try {
             items.clear();
             DatabaseHelper dbHelper = new DatabaseHelper(this);
@@ -139,7 +242,9 @@ public class MainActivity extends AppCompatActivity {
             db.close();
 
             if (items.isEmpty()) {
-                items.add("No SMS records yet.\nReceive an SMS first.");
+                items.add("No SMS found.");
+            } else {
+                Toast.makeText(this, items.size() + " SMS loaded!", Toast.LENGTH_SHORT).show();
             }
             adapter.notifyDataSetChanged();
 
