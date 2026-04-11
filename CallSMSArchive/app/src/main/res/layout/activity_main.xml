@@ -7,17 +7,16 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="56dp"
         android:background="#1A237E"
         android:gravity="center_vertical"
         android:paddingStart="16dp">
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="📁 Call &amp; SMS Archive"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold"/>
     </LinearLayout>
 
@@ -25,36 +24,75 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
-        android:background="#FFFFFF"
-        android:elevation="4dp">
-
+        android:padding="8dp"
+        android:background="#FFFFFF">
         <Button
             android:id="@+id/btnCalls"
             android:layout_width="0dp"
-            android:layout_height="56dp"
+            android:layout_height="52dp"
             android:layout_weight="1"
-            android:text="📞 Call Log"
-            android:textSize="15sp"
+            android:text="📞 CALL LOG"
+            android:textSize="13sp"
             android:textColor="#FFFFFF"
             android:backgroundTint="#1565C0"
             android:layout_marginEnd="6dp"
             android:clickable="true"
             android:focusable="true"/>
-
         <Button
             android:id="@+id/btnSms"
             android:layout_width="0dp"
-            android:layout_height="56dp"
+            android:layout_height="52dp"
             android:layout_weight="1"
-            android:text="✉️ SMS Log"
-            android:textSize="15sp"
+            android:text="✉️ SMS LOG"
+            android:textSize="13sp"
             android:textColor="#FFFFFF"
             android:backgroundTint="#2E7D32"
             android:layout_marginStart="6dp"
             android:clickable="true"
             android:focusable="true"/>
+    </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/todayBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FF6F00"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_vertical">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="📅 Today"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="13sp"/>
+        <TextView
+            android:id="@+id/tvTodayCalls"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📞 0 Calls"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:background="#33FFFFFF"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:layout_marginEnd="6dp"/>
+        <TextView
+            android:id="@+id/tvTodaySms"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✉️ 0 SMS"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:background="#33FFFFFF"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"/>
     </LinearLayout>
 
     <TextView
@@ -63,9 +101,9 @@
         android:layout_height="wrap_content"
         android:text="📞 Call Records"
         android:textColor="#1A237E"
-        android:textSize="16sp"
+        android:textSize="13sp"
         android:textStyle="bold"
-        android:padding="12dp"
+        android:padding="10dp"
         android:background="#E8EAF6"/>
 
     <TextView
@@ -74,15 +112,17 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textColor="#757575"
-        android:textSize="13sp"
+        android:textSize="11sp"
         android:paddingStart="12dp"
-        android:paddingBottom="4dp"/>
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:background="#FFFFFF"/>
 
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:divider="#E0E0E0"
+        android:divider="#F0F0F0"
         android:dividerHeight="1dp"/>
 
 </LinearLayout>
